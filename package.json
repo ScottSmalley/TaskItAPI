@@ -1,0 +1,20 @@
+{
+  "name": "TaskIt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll --verbose --runInBand --detectOpenHandles"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "express": "^4.17.1",
+    "jest": "^26.0.1",
+    "joi-objectid": "^3.0.1",
+    "mongoose": "^5.9.16",
+    "supertest": "^4.0.2"
+  }
+}
