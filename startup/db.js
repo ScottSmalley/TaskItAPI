@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 module.exports = function() {
-    mongoose.connect('mongodb://localhost/taskit')
+    mongoose.connect('mongodb://localhost/taskit_tests')
     .then(() => {
         // console.log(`Connected to MongoDB taskit`);
     })

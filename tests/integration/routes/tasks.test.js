@@ -43,13 +43,11 @@ describe('/api/tasks', () => {
     })
     
     describe('POST /', () => {
-        let server;
         let desc;
         let userId;
         let payload;
     
         beforeEach( async () => {
-            server = require('../../../index');
             desc = 'task1';
             userId = mongoose.Types.ObjectId();
             payload = { desc, userId };
@@ -60,12 +58,6 @@ describe('/api/tasks', () => {
                 password: '12345'
             });
             await user.save();
-        });
-        
-        afterEach( async () => {
-            await server.close();
-            await User.remove({});
-            await Task.remove({});
         });
     
         const run = () => {
@@ -114,22 +106,161 @@ describe('/api/tasks', () => {
         });
     });
 
-    // describe('PUT /:id', () => {
-    //     /*
-    //     Test cases:
-    //     It should return 400 if the desc is missing.
-    //     it should return 400 if assignedTo is missing.
-    //     It should return 400 if the name is missing.
-    //     It should return 400 if the task id is invalid.
-    //     It should return 400 if the desc _id is invalid
-    //     It should return 400 if the assignedTo _id is invalid
-    //     It should return 404 if the task id doesn't exist.
-    //     It should return 404 if the assignedTo _id doesn't exist.
-    //     It should update the desc.
-    //     It should update the assignedTo _id.
-    //     It should update the assignedTo name.
-    //     */
-    // });
+    describe('PUT /:id', () => {
+        let desc;
+        let userId;
+        let taskId;
+        let payload;
+    
+        beforeEach( async () => {
+            desc = 'task1';
+            userId = mongoose.Types.ObjectId();
+            taskId = mongoose.Types.ObjectId();
+            payload = { desc, userId };
+            const user = new User({
+                _id: userId,
+                name: '12345',
+                email: '12345@12345.com',
+                password: '12345'
+            });
+            await user.save();
+
+            const task = new Task({
+                _id: taskId,
+                desc: desc,
+                assignedTo: {
+                    _id: userId,
+                    name: user.name
+                }
+            });
+            await task.save();
+        });
+
+        afterEach( async () => {
+            await User.remove({});
+            await Task.remove({});
+        })
+
+        const run = () => {
+            return request(server)
+                .put('/api/tasks/' + taskId)
+                .send(payload);
+        }
+
+        it('should return 400 if the desc is missing.', async () => {
+            payload = { userId };
+
+            const res = await run();
+
+            expect(res.status).toBe(400);
+        });
+        
+        it('should return 400 if userId is missing.', async () => {
+            payload = { desc };
+
+            const res = await run();
+
+            expect(res.status).toBe(400);
+        });
+        
+        it('should return 400 if taskId is invalid.', async () => {
+            taskId = '12345';
+            
+            const res = await run();
+            
+            expect(res.status).toBe(400);
+        });
+
+        it('should return 400 if desc is less than 5 characters.', async () => {
+            payload = {desc: '1234', userId};
+            
+            const res = await run();
+            
+            expect(res.status).toBe(400);
+        });
+        
+        it('should return 400 if desc is more than 150 characters.', async () => {
+            payload = {desc: new Array(152).join('a'), userId};
+
+            const res = await run();
+
+            expect(res.status).toBe(400);
+        });
+
+        it('should return 400 if userId is invalid.', async () => {
+            payload = {desc, userId: '12345'};
+            
+            const res = await run();
+            
+            expect(res.status).toBe(400);
+        });
+        
+        it('should return 404 if taskId is doesnt exist.', async () => {
+            taskId = mongoose.Types.ObjectId();
+            
+            const res = await run();
+            
+            expect(res.status).toBe(404);
+        });
+        
+        it('should return 404 if userId is doesnt exist.', async () => {
+            payload = {desc, userId: mongoose.Types.ObjectId()};
+            
+            const res = await run();
+            
+            expect(res.status).toBe(404);
+        });
+        
+        it('should return update the desc if given valid input.', async () => {
+            payload = {desc: 'task1test', userId};
+            
+            const res = await run();
+            
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('assignedTo');
+            expect(res.body).toHaveProperty('desc', 'task1test');
+        });
+        
+        it('should should update the assignedTo _id given valid input.', async () => {
+            const newUserId = mongoose.Types.ObjectId();
+            const newUser = new User({
+                _id: newUserId,
+                name: 'John Doe',
+                email: '12345@12345.com',
+                password: '12345'
+            });
+            await newUser.save();
+
+            payload = {desc, userId: newUserId};
+            
+            const res = await run();
+            
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('desc');
+            expect(res.body).toHaveProperty('assignedTo._id', newUserId.toHexString());
+            expect(res.body).toHaveProperty('assignedTo.name');
+        });
+        
+        it('should should update the assignedTo name given valid input.', async () => {
+            const newUserId = mongoose.Types.ObjectId();
+            const newUser = new User({
+                _id: newUserId,
+                name: 'John Doe',
+                email: '12345@12345.com',
+                password: '12345'
+            });
+            await newUser.save();
+
+            payload = {desc, userId: newUserId};
+            
+            const res = await run();
+            
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('desc');
+            expect(res.body).toHaveProperty('assignedTo._id');
+            expect(res.body).toHaveProperty('assignedTo.name', 'John Doe');
+        });
+    });
 
     describe('DELETE /:id', () => {
         it('should return 404 status if no task is found.', async () => {
