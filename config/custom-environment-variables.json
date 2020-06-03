@@ -1,0 +1,4 @@
+{
+    "jwtPrivateKey": "taskit_jwtPrivateKey",
+    "db": "taskit_db"
+}

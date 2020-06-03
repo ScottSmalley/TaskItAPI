@@ -74,14 +74,6 @@ describe('/api/tasks', () => {
             expect(res.status).toBe(400);
         });
         
-        it('should return 400 status if userId is missing.', async () => {
-            payload = { desc };
-    
-            const res = await run();
-    
-            expect(res.status).toBe(400);
-        });
-        
         it('should return 400 status if user is not found.', async () => {
             await User.remove({});
             
@@ -117,12 +109,14 @@ describe('/api/tasks', () => {
             userId = mongoose.Types.ObjectId();
             taskId = mongoose.Types.ObjectId();
             payload = { desc, userId };
+
             const user = new User({
                 _id: userId,
                 name: '12345',
                 email: '12345@12345.com',
                 password: '12345'
             });
+
             await user.save();
 
             const task = new Task({
@@ -133,6 +127,7 @@ describe('/api/tasks', () => {
                     name: user.name
                 }
             });
+
             await task.save();
         });
 
@@ -155,22 +150,6 @@ describe('/api/tasks', () => {
             expect(res.status).toBe(400);
         });
         
-        it('should return 400 if userId is missing.', async () => {
-            payload = { desc };
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-        });
-        
-        it('should return 400 if taskId is invalid.', async () => {
-            taskId = '12345';
-            
-            const res = await run();
-            
-            expect(res.status).toBe(400);
-        });
-
         it('should return 400 if desc is less than 5 characters.', async () => {
             payload = {desc: '1234', userId};
             

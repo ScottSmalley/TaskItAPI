@@ -64,37 +64,6 @@ describe('/api/users', () => {
             expect(res.status).toBe(400);
          });
          
-         it('should return 400 if email is missing.', async () => {
-            payload = {name, password};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
-         
-         it('should return 400 if password is missing.', async () => {
-            payload = {name, email};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
-
-         it('should return 400 if name is less than 5 characters.', async () => {
-            payload = {name: '1234', email, password};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
-         
-         it('should return 400 if name is less than 5 characters.', async () => {
-            payload = {name: new Array(1026).join('a'), email, password};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
          
          it('should return 400 if email is less than 5 characters.', async () => {
             payload = {name, email: '1234', password};
@@ -120,30 +89,6 @@ describe('/api/users', () => {
             expect(res.status).toBe(400);
          });
 
-         it('should return 400 if password is less than 5 characters.', async () => {
-            payload = {name, email, password: '1234'};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
-         
-         it('should return 400 if password is less than 5 characters.', async () => {
-            payload = {name, email, password: new Array(1026).join('a')};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
-         
-         it('should return 400 if isAdmin is invalid', async () => {
-            payload = {name, email, password, isAdmin: '12345'};
-
-            const res = await run();
-
-            expect(res.status).toBe(400);
-         });
-         
          it('should return the name if given valid data.', async () => {
             const res = await run();
 
@@ -182,12 +127,160 @@ describe('/api/users', () => {
          });
     });
 
-    // describe('PUT /', () => {
+    describe('PUT /', () => {
+      let name;
+      let email;
+      let password;
+      let payload;
 
-    // });
+      beforeEach( async () => {
+         userId = mongoose.Types.ObjectId();
+         name = 'user1';
+         email = 'user1@user1.com';
+         password = '12345';
+         payload = { 
+            _id: userId, 
+            name, 
+            email, 
+            password };
+        
+         const user = new User(payload);
+         
+         await user.save();
 
-    // describe('DELETE /', () => {
+         //Reusing the payload var for the run method.
+         payload = {
+            name,
+            email, 
+            password
+         };
+     });
 
-    // });
+     afterEach( async () => {
+         await User.remove({});
+     });
+      
+      const run = () => {
+         return request(server)
+             .put('/api/users/' + userId)
+             .send(payload);
+     }
 
+      it('should return 400 if userId is invalid.', async () => {
+         userId = '12345';
+
+         const res = await run();
+
+         expect(res.status).toBe(400);
+      });
+
+      it('should return 404 if userId doesnt exist.', async () => {
+         userId = mongoose.Types.ObjectId();
+
+         const res = await run();
+
+         expect(res.status).toBe(404);
+      });
+
+      it('should return 400 if name is missing.', async () => {
+         payload = {email, password};
+
+         const res = await run();
+
+         expect(res.status).toBe(400);
+      });
+
+      it('should return the user if given valid data.', async () => {
+         const res = await run();
+
+         expect(res.status).toBe(200);
+         expect(Object.keys(res.body)).toEqual(expect.arrayContaining([
+            'name',
+            'email'
+         ]));
+      });
+
+      it('should update the name if given valid data.', async () => {
+         payload = {name: 'user1test', email, password};
+
+         const res = await run();
+
+         expect(res.status).toBe(200);
+         expect(res.body).toHaveProperty('name', 'user1test');
+      });
+      
+      it('should update the email if given valid data.', async () => {
+         payload = {name, email: 'user1test@user1test.com', password};
+
+         const res = await run();
+
+         expect(res.status).toBe(200);
+         expect(res.body).toHaveProperty('email', 'user1test@user1test.com');
+      });
+      
+      it('should update the password if given valid data.', async () => {
+         payload = {name, email, password: '123456'};
+
+         const res = await run();
+
+         expect(res.status).toBe(200);
+         expect(res.body).toHaveProperty('password', '123456');
+      });
+    });
+
+    describe('DELETE /', () => {
+      let name;
+      let email;
+      let password;
+      let payload;
+
+      beforeEach( async () => {
+         userId = mongoose.Types.ObjectId();
+         const user = new User({ 
+            _id: userId, 
+            name: 'user1', 
+            email: 'user1@user1.com', 
+            password: '12345' 
+         });
+         
+         await user.save();
+     });
+
+     afterEach( async () => {
+         await User.remove({});
+     });
+      
+      it('should return 400 error if given an invalid userId.', async () => {
+         userId = '12345';
+
+         const res = await request(server).delete('/api/users/' + userId);
+
+         expect(res.status).toBe(400);
+      });
+      
+      it('should return 404 error if the user doesnt exist.', async () => {
+         await User.remove({});
+
+         const res = await request(server).delete('/api/users/' + userId);
+
+         expect(res.status).toBe(404);
+      });
+      
+      it('should return the user if given valid input.', async () => {
+         const res = await request(server).delete('/api/users/' + userId);
+
+         expect(res.status).toBe(200);
+         expect(Object.keys(res.body)).toEqual(expect.arrayContaining([
+            'name',
+            'email'
+         ]));
+      });
+    });
+    describe('JWT Header', () => {
+      /*
+      TEST IF THE EMAIL EXISTS IN THE SERVER DURING POST.
+      SEE HOW WE CAN TEST FOR RECEIVING THE HEADER TOKEN.
+      */ 
+      it();
+    })
 });

@@ -1,3 +1,6 @@
+/*
+Models a task, and validates input regarding tasks.
+*/
 const Joi = require('@hapi/joi');
 const mongoose = require('mongoose');
 

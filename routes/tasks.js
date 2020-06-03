@@ -1,18 +1,22 @@
+/*
+Route Handling logic for /api/tasks
+*/
 const express = require('express');
 const router = express.Router();
 const validateObjectId = require('../middleware/validateObjectId');
+const asyncMiddleware = require('../middleware/async');
 const {Task, validateTask} = require('../models/task');
 const {User} = require('../models/user');
 
 //***************************ROUTES***************************
 //*************GET*************
-router.get('/', async (req, res) => {
+router.get('/', asyncMiddleware(async (req, res) => {
     const tasks = await Task.find();
     res.send(tasks);
-});
+}));
 
 //*************POST*************
-router.post('/', async (req, res) => {
+router.post('/', asyncMiddleware(async (req, res) => {
     const { error } = validateTask(req.body);
     if (error) return res.status(400).send(error.message);
 
@@ -28,10 +32,10 @@ router.post('/', async (req, res) => {
     });
 
     res.send(task);
-});
+}));
 
 //*************PUT*************
-router.put('/:id', validateObjectId, async (req, res) => {
+router.put('/:id', validateObjectId, asyncMiddleware(async (req, res) => {
     const { error } = validateTask(req.body);
     if (error) return res.status(400).send(error.message);
 
@@ -50,15 +54,15 @@ router.put('/:id', validateObjectId, async (req, res) => {
     if (!existingTask) return res.status(404).send('Couldn\'t find a task by that ID.');
 
     res.send(existingTask);
-});
+}));
 
 //*************DELETE*************
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', asyncMiddleware(async (req, res) => {
     const task = await Task.findByIdAndRemove(req.params.id);
     if (!task) return res.status(404).send('Couldn\'t find a task by that id.');
 
     res.send(task);
-});
+}));
 
 //***************************EXPORTS***************************
 module.exports = router;

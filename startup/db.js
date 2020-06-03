@@ -1,11 +1,13 @@
+const winston = require('winston');
 const mongoose = require('mongoose');
+const config = require('config');
 
 module.exports = function() {
-    mongoose.connect('mongodb://localhost/taskit_tests')
+    const db = config.get('db');
+    mongoose.connect(db)
     .then(() => {
-        // console.log(`Connected to MongoDB taskit`);
-    })
-    .catch(() => {
-        // console.log('There was a problem connecting to MongoDB taskit');
+        winston.info(`Connected to ${db}.`);
+        // console.log(`Connected to ${db}.`);
     });
+    //Removed catch, since we have error.js doing the catching.
 }

@@ -1,5 +1,11 @@
+/*
+Models a user, validates input regarding users, 
+and looks up users in our database.
+*/
 const Joi = require('@hapi/joi');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 //***************************SCHEMA / MODEL***************************
 const userSchema = new mongoose.Schema({
@@ -28,11 +34,17 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+//Looks up User objects in the database.
 userSchema.statics.lookup = function (userId){
     return this.findOne({
         '_id': userId
     });
 };
+
+//Generates an auth token using JWT.
+userSchema.methods.generateAuthToken = function (){
+    return jwt.sign({ _id: this.id, isAdmin: this.isAdmin}, config.get("jwtPrivateKey"));
+}
 
 const User = mongoose.model('User', userSchema);
 
