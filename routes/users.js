@@ -7,6 +7,8 @@ const router = express.Router();
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const validateObjectId = require('../middleware/validateObjectId');
+const auth = require('../middleware/auth');
+const is_admin = require('../middleware/is_admin');
 const asyncMiddleware = require('../middleware/async');
 const {User, validateUser} = require('../models/user');
 
@@ -26,7 +28,7 @@ router.post('/', asyncMiddleware(async (req, res) => {
     
     //Check if the email was already used in an account.
     let user = await User.findOne({ email: req.body.email });
-    if (user) return req.status(400).send('Email already registered.');
+    if (user) return res.status(400).send('Email already registered.');
     
     //Generate the salt to use in the password hash.
     const salt = await bcrypt.genSalt(10);
@@ -44,7 +46,7 @@ router.post('/', asyncMiddleware(async (req, res) => {
     //Generate the User.
     user = new User(payload);
 
-    //Save it.
+    //Save it to the database.
     await user.save();
 
     //Generate the JWT Auth Token.
@@ -56,28 +58,31 @@ router.post('/', asyncMiddleware(async (req, res) => {
 }));
 
 //*************PUT*************
-router.put('/:id', validateObjectId, asyncMiddleware(async (req, res) => {
+router.put('/:id', [auth, validateObjectId], asyncMiddleware(async (req, res) => {
     const { error } = validateUser(req.body);
     if (error) return res.status(400).send(error.message);
+
+    //Generate the salt to use in the password hash.
+    const salt = await bcrypt.genSalt(10);
 
     const user = await User.findByIdAndUpdate(req.params.id, {
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password
+        password: await bcrypt.hash(req.body.password, salt)
     }, {new: true});
 
     if(!user) return res.status(404).send('Couldn\'t find a user by that ID.');
 
-    res.send(user);
+    res.send(_.pick(user, ['_id', 'name', 'email']));
 }));
 
 //*************DELETE*************
-router.delete('/:id', validateObjectId, asyncMiddleware(async (req, res) => {
+router.delete('/:id', [auth, validateObjectId, is_admin], asyncMiddleware(async (req, res) => {
     const user = await User.findByIdAndDelete(req.params.id);
 
     if(!user) return res.status(404).send('Couldn\'t find a user by that ID.');
 
-    res.send(user);
+    res.send(_.pick(user, ['_id', 'name', 'email']));
 }));
 
 //***************************EXPORTS***************************

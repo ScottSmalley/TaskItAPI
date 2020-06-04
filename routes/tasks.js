@@ -4,6 +4,8 @@ Route Handling logic for /api/tasks
 const express = require('express');
 const router = express.Router();
 const validateObjectId = require('../middleware/validateObjectId');
+const is_admin = require('../middleware/is_admin');
+const auth = require('../middleware/auth');
 const asyncMiddleware = require('../middleware/async');
 const {Task, validateTask} = require('../models/task');
 const {User} = require('../models/user');
@@ -31,11 +33,13 @@ router.post('/', asyncMiddleware(async (req, res) => {
         }
     });
 
+    await task.save();
+
     res.send(task);
 }));
 
 //*************PUT*************
-router.put('/:id', validateObjectId, asyncMiddleware(async (req, res) => {
+router.put('/:id', [auth, validateObjectId], asyncMiddleware(async (req, res) => {
     const { error } = validateTask(req.body);
     if (error) return res.status(400).send(error.message);
 
@@ -57,7 +61,7 @@ router.put('/:id', validateObjectId, asyncMiddleware(async (req, res) => {
 }));
 
 //*************DELETE*************
-router.delete('/:id', asyncMiddleware(async (req, res) => {
+router.delete('/:id', [auth, validateObjectId, is_admin], asyncMiddleware(async (req, res) => {
     const task = await Task.findByIdAndRemove(req.params.id);
     if (!task) return res.status(404).send('Couldn\'t find a task by that id.');
 

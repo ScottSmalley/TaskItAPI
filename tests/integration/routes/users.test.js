@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const request = require('supertest');
+const bcrypt = require('bcrypt');
 const {User} = require('../../../models/user');
 
 describe('/api/users', () => {
@@ -89,6 +90,16 @@ describe('/api/users', () => {
             expect(res.status).toBe(400);
          });
 
+         it('should return 400 if the email is already exists in the database.', async () => {
+            const user = new User({name, email, password});
+
+            await user.save();
+
+            const res = await run();
+
+            expect(res.status).toBe(400);
+         });
+
          it('should return the name if given valid data.', async () => {
             const res = await run();
 
@@ -132,6 +143,7 @@ describe('/api/users', () => {
       let email;
       let password;
       let payload;
+      let token;
 
       beforeEach( async () => {
          userId = mongoose.Types.ObjectId();
@@ -147,6 +159,9 @@ describe('/api/users', () => {
          const user = new User(payload);
          
          await user.save();
+         
+         //PUT now requires a JWT token in the header.
+         token = user.generateAuthToken();
 
          //Reusing the payload var for the run method.
          payload = {
@@ -163,8 +178,25 @@ describe('/api/users', () => {
       const run = () => {
          return request(server)
              .put('/api/users/' + userId)
+             .set('taskit-auth-token', token)
              .send(payload);
      }
+
+      it('should return 401 if token header is missing.', async () => {
+         token = '';
+
+         const res = await run();
+
+         expect(res.status).toBe(401);
+      });
+      
+      it('should return 400 if token is invalid.', async () => {
+         token = '12345';
+
+         const res = await run();
+
+         expect(res.status).toBe(400);
+      });
 
       it('should return 400 if userId is invalid.', async () => {
          userId = '12345';
@@ -217,22 +249,11 @@ describe('/api/users', () => {
          expect(res.status).toBe(200);
          expect(res.body).toHaveProperty('email', 'user1test@user1test.com');
       });
-      
-      it('should update the password if given valid data.', async () => {
-         payload = {name, email, password: '123456'};
-
-         const res = await run();
-
-         expect(res.status).toBe(200);
-         expect(res.body).toHaveProperty('password', '123456');
-      });
     });
 
     describe('DELETE /', () => {
-      let name;
-      let email;
-      let password;
-      let payload;
+      let userId;
+      let token;
 
       beforeEach( async () => {
          userId = mongoose.Types.ObjectId();
@@ -240,20 +261,67 @@ describe('/api/users', () => {
             _id: userId, 
             name: 'user1', 
             email: 'user1@user1.com', 
-            password: '12345' 
+            password: '12345',
+            isAdmin: true
          });
          
          await user.save();
+         
+         token = user.generateAuthToken();
      });
 
      afterEach( async () => {
          await User.remove({});
      });
+
+     const run = () => {
+         return request(server)
+            .delete('/api/users/' + userId)
+            .set('taskit-auth-token', token);
+     };
+
+     it('should return 403 if the payload value, isAdmin is false.', async () => {
+            
+         //Remove the user that was created in the beforeEach() to make our own.
+         await User.remove({});
+
+         //Create a user that has isAdmin flagged as false.
+         const user = new User({
+            _id: userId,
+            name: 'user1',
+            email: 'user1@user1.com',
+            password: '12345'
+         });
+
+         await user.save();
+
+         token = user.generateAuthToken();
+
+         const res = await run();
+
+         expect(res.status).toBe(403);
+      });
       
+      it('should return 401 if token header is missing.', async () => {
+         token = '';
+
+         const res = await run();
+
+         expect(res.status).toBe(401);
+      });
+   
+      it('should return 400 if token is invalid.', async () => {
+         token = '12345';
+
+         const res = await run();
+
+         expect(res.status).toBe(400);
+      });
+
       it('should return 400 error if given an invalid userId.', async () => {
          userId = '12345';
 
-         const res = await request(server).delete('/api/users/' + userId);
+         const res = await run();
 
          expect(res.status).toBe(400);
       });
@@ -261,13 +329,13 @@ describe('/api/users', () => {
       it('should return 404 error if the user doesnt exist.', async () => {
          await User.remove({});
 
-         const res = await request(server).delete('/api/users/' + userId);
+         const res = await run();
 
          expect(res.status).toBe(404);
       });
       
       it('should return the user if given valid input.', async () => {
-         const res = await request(server).delete('/api/users/' + userId);
+         const res = await run();
 
          expect(res.status).toBe(200);
          expect(Object.keys(res.body)).toEqual(expect.arrayContaining([
@@ -276,11 +344,4 @@ describe('/api/users', () => {
          ]));
       });
     });
-    describe('JWT Header', () => {
-      /*
-      TEST IF THE EMAIL EXISTS IN THE SERVER DURING POST.
-      SEE HOW WE CAN TEST FOR RECEIVING THE HEADER TOKEN.
-      */ 
-      it();
-    })
 });

@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+const config = require('config');
+const jwt = require('jsonwebtoken');
 const {User, validateUser} = require('../../../models/user');
 
 describe('User.validateUser()', () => {
@@ -152,5 +155,27 @@ describe('User.validateUser()', () => {
         const res = validateUser(user);
 
         expect(res).toBeTruthy();
+    });
+});
+
+describe('User.generateAuthToken()', () => {
+    it('should return a valid jwtAuthToken.', () => {
+        //JWT payload
+        const payload = {
+            _id: mongoose.Types.ObjectId().toHexString(),
+            isAdmin: true
+        };
+
+        //Create a user with the payload.
+        const user = new User(payload);
+
+        //Generate the token.
+        const token = user.generateAuthToken();
+
+        //Verify and decode it.
+        const decoded = jwt.verify(token, config.get('jwtPrivateKey'));
+
+        //Should match the payload given.
+        expect(decoded).toMatchObject(payload);
     });
 });

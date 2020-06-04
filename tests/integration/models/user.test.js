@@ -37,10 +37,3 @@ describe('User.lookup()', () => {
         expect(res).toHaveProperty('name', 'user1');
     });
 });
-
-describe('User.generateAuthToken', () => {
-    /*
-    TEST FOR JWT AND USER.GENERATEAUTHTOKEN()
-    */
-    it();
-});
