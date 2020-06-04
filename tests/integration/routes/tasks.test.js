@@ -15,6 +15,7 @@ describe('/api/tasks', () => {
         await Task.remove({});
     });
 
+//*************GET*************    
     describe('GET /', () => {
         it('should return all tasks.', async () => {
             await Task.collection.insertMany([
@@ -41,7 +42,8 @@ describe('/api/tasks', () => {
             expect(res.body.some(task2 => task2.desc === 'task2'));
         });
     })
-    
+
+//*************POST*************    
     describe('POST /', () => {
         let desc;
         let userId;
@@ -98,6 +100,7 @@ describe('/api/tasks', () => {
         });
     });
 
+//*************PUT*************
     describe('PUT /:id', () => {
         let desc;
         let userId;
@@ -261,6 +264,7 @@ describe('/api/tasks', () => {
         });
     });
 
+//*************DELETE*************    
     describe('DELETE /:id', () => {
         let token;
 

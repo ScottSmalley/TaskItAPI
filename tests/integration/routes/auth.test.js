@@ -33,7 +33,8 @@ describe('/api/auth', () => {
         .post('/api/auth')
         .send(payload);
     };
-
+    
+//*************POST*************
     describe('POST /', () => {
         it('returns 400 if the email is missing.', async () => {
             payload = {password};

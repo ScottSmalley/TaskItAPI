@@ -160,7 +160,7 @@ describe('User.validateUser()', () => {
 
 describe('User.generateAuthToken()', () => {
     it('should return a valid jwtAuthToken.', () => {
-        //JWT payload
+        //Payload for JWT
         const payload = {
             _id: mongoose.Types.ObjectId().toHexString(),
             isAdmin: true

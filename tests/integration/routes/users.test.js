@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const request = require('supertest');
-const bcrypt = require('bcrypt');
 const {User} = require('../../../models/user');
 
 describe('/api/users', () => {
@@ -15,6 +14,7 @@ describe('/api/users', () => {
         await server.close();
     });
     
+//*************GET*************    
     describe('GET /', () => {
         it('should return all users', async () => {
             await User.collection.insertMany([
@@ -37,6 +37,7 @@ describe('/api/users', () => {
         });
     });
 
+//*************POST*************    
     describe('POST /', () => {
         let name;
         let email;
@@ -138,6 +139,7 @@ describe('/api/users', () => {
          });
     });
 
+//*************PUT*************
     describe('PUT /', () => {
       let name;
       let email;
@@ -251,6 +253,7 @@ describe('/api/users', () => {
       });
     });
 
+//*************DELETE*************    
     describe('DELETE /', () => {
       let userId;
       let token;
