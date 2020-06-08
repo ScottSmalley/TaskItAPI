@@ -16,7 +16,7 @@ router.post('/', asyncMiddleware(async (req, res) => {
 
     //Validate the email and password given.
     const { error } = validateAuth(req.body);
-    if (error) return res.status(400).send(error.message);
+    if (!error) return res.status(400).send(error.message);
 
     //Query for a User based on the email given.
     let user = await User.findOne( { email: req.body.email });

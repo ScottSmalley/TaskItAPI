@@ -727,3 +727,25 @@
 {"message":"Connected to mongodb://localhost/taskit.","level":"info"}
 {"message":"Now listening on port 3000...","level":"info"}
 {"message":"Connected to mongodb://localhost/taskit.","level":"info"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Cannot read property 'message' of undefined","level":"error"}
+{"message":"Cannot read property 'message' of undefined","level":"error"}
+{"message":"Cannot read property 'message' of undefined","level":"error"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Cannot read property 'message' of undefined","level":"error"}
+{"message":"Cannot read property 'message' of undefined","level":"error"}
+{"message":"Cannot read property 'message' of undefined","level":"error"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
+{"message":"Now listening on port 3000...","level":"info"}
+{"message":"Connected to mongodb://localhost/taskit_tests.","level":"info"}
